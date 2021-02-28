@@ -1,33 +1,59 @@
-/*
- * Copyright (C) 2021 Biel A. P. - 0xbiel <biel@0x0x.xyz>
- * Author: Biel A. P. - 0xbiel <biel@0x0x.xyz>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
+/* Main TUI for SMDGB.
+ * Author: Biel A. P. <0xbiel>
+ * License: GPL v3.0
  */
-
-// gcc main.c -lncurses
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <ncurses.h>
 
+WINDOW *createWin(WINDOW *window)
+{
+  int x, y, i;
+  getmaxyx(window, y, x);
+  box(window, 0, 0);
+}
+
 int main()
 {
+  int px, py, nx, ny;
+  int inputSize = 3;
+
   initscr();
-  printw("SMDGB - Small and Minimal Debugger.");
-  refresh();
-  getch();
+  //curs_set(FALSE);
+  //noecho();
+
+  getmaxyx(stdscr, py, px);
+  WINDOW *dbg = newwin(py - inputSize, px, 0, 0);
+  WINDOW *input = newwin(inputSize, px, py - inputSize, 0);
+
+  createWin(dbg);
+  createWin(input);
+
+  while(1)
+  {
+    getmaxyx(stdscr, ny, nx);
+
+    if(ny != py || nx != px)
+    {
+      px = nx;
+      py = ny;
+      wresize(dbg, ny - inputSize, nx);
+      wresize(input, inputSize, nx);
+      mvwin(input, ny - inputSize, 0);
+      wclear(stdscr);
+      wclear(dbg);
+      wclear(input);
+      createWin(dbg);
+      createWin(input);
+    }
+
+    mvwprintw(dbg, 1, 1, "Placeholder 0xsmdbg.");
+    mvwscanw(input, 1, 1, "");
+    wrefresh(dbg);
+    wrefresh(input);
+  }
+
   endwin();
 
   return 0;
